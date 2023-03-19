@@ -1,8 +1,8 @@
 'strict mode';
 
-const api = require('../api/api');
-const selectedApi = new URLSearchParams(window.location.search).get("api");
-const dataAccess = api[selectedApi] || api[api.default];
+// const api = require('../api/api');
+// const selectedApi = new URLSearchParams(window.location.search).get("api");
+const dataAccess = require('../api/local');
 const text = require('./text');
 
 let paintingCache = {};
@@ -10,7 +10,7 @@ let unusedTextures = [];
 
 const dynamicQualThreshold = 2;
 function dynamicQual(quality) {
-	if(!navigator.connection || navigator.connection.downlink < dynamicQualThreshold) {
+	if (!navigator.connection || navigator.connection.downlink < dynamicQualThreshold) {
 		quality = (quality == 'high') ? 'mid' : 'low';
 	}
 	return quality;
@@ -25,7 +25,7 @@ let aniso = false;
 
 const emptyImage = (regl) => [
 	(unusedTextures.pop() || regl.texture)([[[200, 200, 200]]]),
-	_=>(unusedTextures.pop() || regl.texture)([[[0, 0, 0, 0]]]),
+	_ => (unusedTextures.pop() || regl.texture)([[[0, 0, 0, 0]]]),
 	1
 ];
 
@@ -36,7 +36,7 @@ async function loadImage(regl, p, res) {
 		) : 0;
 		console.log(aniso);
 	}
-	
+
 	let image, title;
 	try {
 		const data = await dataAccess.fetchImage(p, dynamicQual(res));
@@ -44,21 +44,21 @@ async function loadImage(regl, p, res) {
 		// Resize image to a power of 2 to use mipmap (faster than createImageBitmap resizing)
 		image = await createImageBitmap(data.image);
 		ctx.drawImage(image, 0, 0, resizeCanvas.width, resizeCanvas.height);
-	} catch(e) {
+	} catch (e) {
 		// Try again with a lower resolution, otherwise return an empty image
 		console.error(e);
 		return res == "high" ? await loadImage(regl, p, "low") : emptyImage(regl);
 	}
 
 	return [(unusedTextures.pop() || regl.texture)({
-			data: resizeCanvas,
-			min: 'mipmap',
-			mipmap: 'nice',
-			aniso,
-			flipY: true
-		}),
-		width=>text.init((unusedTextures.pop() || regl.texture), title, width),
-		image.width / image.height
+		data: resizeCanvas,
+		min: 'mipmap',
+		mipmap: 'nice',
+		aniso,
+		flipY: true
+	}),
+	width => text.init((unusedTextures.pop() || regl.texture), title, width),
+	image.width / image.height
 	];
 }
 
