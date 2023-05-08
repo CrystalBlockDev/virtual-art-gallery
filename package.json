@@ -4,7 +4,7 @@
 	"version": "1.0.0",
 	"scripts": {
 		"start": "budo src/index.js",
-		"build": "browserify -p tinyify src/index.js -o tmp_bundle.js && htmlify base.html tmp_bundle.js > public/build.html && rm tmp_bundle.js",
+		"build": "browserify -p tinyify src/index.js -o ./public/bundle.js | htmlify base.html > build.html ",
 		"genList": "node images/generateList.js",
 		"prestart": "npm run genList",
 		"prebuild": "npm run genList"
